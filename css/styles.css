@@ -15,7 +15,7 @@ body{
     display: flex;
     height: 600px;
     width: 500px;
-    background: url('/img/space.png');
+    background: url('../img/space.png');
     background-repeat: repeat;
     background-position: 0px;
     border-radius: 10px;
