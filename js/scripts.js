@@ -7,6 +7,8 @@
     let shoot;
     let enemy;
     let timerDisparo;
+    let timerEnemy;
+    let enemyMap = false;
     let disparo = false;
 
     // SELECTORS
@@ -24,7 +26,6 @@
         Disparar(e);
     }, false)
 
-
     // FUNCTIONS
     // Function -> Inicia Game
     function Start() {
@@ -35,10 +36,11 @@
 
     // Function -> Game Over
     function GameOver() {
-        alert("Fim de Jogo");
+        alert("Game Over\nClique em 'Ok' para continuar");
 
         clearInterval(timerDisparo)
         clearInterval(timer)
+        clearInterval(timerEnemy)
 
         player.remove();
 
@@ -56,28 +58,37 @@
 
         // SETTIMER
         timer = setInterval(() => {
-
             // Movendo Background
             MoveBackground();
 
-            // Verifica se o Player foi criado
+            // Criando Player
             if (!player) {
                 CreatePlayer();
             }
 
-            // Verifica se ha inimigo na tela
-            if (!enemy) {
+            // Criando inimigo
+            if (enemyMap == false) {
                 CreateEnemy();
+
+                // Movendo inimigo
+                MoveEnemy();
+
+                // Aplicando visibilidade do inimigo
+                setTimeout(() => {
+                    enemy.style.visibility = "visible";
+                }, 2000)
+
+                enemyMap = true;
             }
 
-            // Checa Colisao
+            // Checa Todas as Colisoes
             CheckColision();
 
             // Checa Game Over
-        }, 10)
+        }, 30)
 
 
-        // FIMTIMER -> GameOver == true
+        // FIMTIMER
     }
 
     // Function -> Gerar Player
@@ -115,13 +126,19 @@
     // Function -> Move Jogador Cima
     function MoveUp(player) {
         let posicaoY = parseInt(getComputedStyle(player).top)
-        player.style.top = posicaoY - 10 + "px"
+
+        if(posicaoY >= 10){
+            player.style.top = posicaoY - 10 + "px"
+        }
     }
 
     // Function -> Move jogador Baixo
     function MoveDown(player) {
         let posicaoY = parseInt(getComputedStyle(player).top)
-        player.style.top = posicaoY + 10 + "px"
+
+        if(posicaoY <= 512){
+            player.style.top = posicaoY + 10 + "px"
+        }
     }
 
     // Function -> Disparar
@@ -167,9 +184,10 @@
         const arrayEnemy = ['monster-1.png', 'monster-2.png', 'monster-3.png']
         const enemyNumber = GenerateRandomEnemy();
 
-        const posicaoTop = Math.floor(Math.random() * 550);
+        const posicaoTop = Math.floor(Math.random() * 510);
 
         enemy = document.createElement("img");
+        enemy.style.visibility = "hidden";
         enemy.classList.add("enemy");
         enemy.style.top = posicaoTop + "px"
         enemy.src = "img/" + arrayEnemy[enemyNumber];
@@ -179,8 +197,6 @@
         // Listener
         enemy = document.querySelector(".enemy")
 
-        // Movendo inimigo
-        //MoveEnemy();
     }
 
     // Function -> Gerando inimigo randomizado no mapa
@@ -193,7 +209,7 @@
 
     // Function -> Move inimigo
     function MoveEnemy() {
-        setInterval(() => {
+        timerEnemy = setInterval(() => {
             let posicaoX = parseInt(getComputedStyle(enemy).left)
             enemy.style.left = posicaoX - 2 + "px";
         }, 30)
@@ -201,11 +217,14 @@
 
     // Function -> Checando Colisao
     function CheckColision() {
-        // Colisao inimigo com Player
-        ColisionEnemyPlayer();
 
-        // Colisao Disparo com o Inimigo
-        ColisionDisparoEnemy();
+        if (enemy) {
+            // Colisao inimigo com Player
+            ColisionEnemyPlayer();
+
+            // Colisao Disparo com o Inimigo
+            ColisionDisparoEnemy();
+        }
 
         // Colisao Disparo com o Fundo Mapa
         ColisionDisparoFinalMap();
@@ -216,7 +235,7 @@
 
         let posicaoX = parseInt(getComputedStyle(enemy).left)
 
-        if (posicaoX <= 18) {
+        if (posicaoX <= 18 && !enemy.classList.contains("alienDeath")) {
             GameOver();
         }
     }
@@ -230,8 +249,16 @@
             let shootPositionY = parseInt(getComputedStyle(shoot).top)
             let shootPositionX = parseInt(getComputedStyle(shoot).left)
 
-            if (enemyPositionY <= shootPositionY && enemyPositionY - 75 >= shootPositionY) {
-                console.log("bang")
+            if (enemyPositionY - 20 <= shootPositionY && enemyPositionY + 35 >= shootPositionY && shootPositionX >= enemyPositionX - 100) {
+                enemy.src = "img/explosion.png"
+                enemy.classList.add("alienDeath")
+                setTimeout(() => {
+                    enemy.remove();
+                    clearInterval(timerEnemy)
+                }, 1000)
+                setTimeout(() => {
+                    enemyMap = false;
+                }, 1000)
             }
         }
     }
